@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding — 느낌으로 코딩하다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050508;
+    --surface: #0d0d14;
+    --card: #12121c;
+    --border: rgba(255,255,255,0.07);
+    --accent1: #7fffb2;
+    --accent2: #ff6bff;
+    --accent3: #5be0ff;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --glow1: rgba(127,255,178,0.15);
+    --glow2: rgba(255,107,255,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed; top: 0; left: 0;
+    width: 12px; height: 12px;
+    background: var(--accent1);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, background 0.3s, width 0.3s, height 0.3s;
+    mix-blend-mode: difference;
+  }
+
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 100; opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 50;
+    padding: 20px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(20px);
+    background: rgba(5,5,8,0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: var(--accent1);
+    text-shadow: 0 0 20px var(--glow1);
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--accent1); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.5;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: var(--glow1); top: -10%; left: -10%; }
+  .orb-2 { width: 400px; height: 400px; background: var(--glow2); bottom: -5%; right: -5%; animation-delay: -4s; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(91,224,255,0.1); top: 40%; left: 50%; animation-delay: -2s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    color: var(--accent1);
+    border: 1px solid rgba(127,255,178,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    opacity: 0; transform: translateY(20px);
+    animation: reveal 0.8s ease forwards 0.2s;
+    background: rgba(127,255,178,0.05);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 14vw, 11rem);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+    opacity: 0; transform: translateY(30px);
+    animation: reveal 0.9s ease forwards 0.4s;
+  }
+  .hero-title .line1 { display: block; color: var(--text); }
+  .hero-title .line2 {
+    display: block;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    max-width: 560px;
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 48px;
+    opacity: 0; transform: translateY(20px);
+    animation: reveal 0.9s ease forwards 0.65s;
+  }
+
+  .hero-cta {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    opacity: 0; transform: translateY(20px);
+    animation: reveal 0.9s ease forwards 0.85s;
+  }
+  .btn-primary {
+    padding: 14px 36px;
+    background: var(--accent1);
+    color: #050508;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: none; border-radius: 6px;
+    cursor: none; text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(127,255,178,0.3);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(127,255,178,0.5);
+  }
+  .btn-ghost {
+    padding: 14px 36px;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: none; text-decoration: none;
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--accent1); color: var(--accent1); }
+
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 0.7rem; letter-spacing: 0.2em;
+    font-family: 'Space Mono', monospace;
+    opacity: 0; animation: reveal 1s ease forwards 1.4s;
+  }
+  .scroll-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, var(--accent1), transparent);
+    animation: scrollpulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollpulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(0.7); }
+  }
+
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTIONS shared */
+  section { padding: 100px 24px; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-bottom: 20px;
+  }
+  .section-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 500px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  /* WHAT IS */
+  .what-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 60px;
+  }
+  .code-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .code-bar {
+    background: var(--surface);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .d1 { background: #ff5f57; }
+  .d2 { background: #febc2e; }
+  .d3 { background: #28c840; }
+  .code-filename {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+  .code-content {
+    padding: 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+  }
+  .c-comment { color: #4b5563; }
+  .c-keyword { color: var(--accent2); }
+  .c-string { color: var(--accent1); }
+  .c-fn { color: var(--accent3); }
+  .c-text { color: #9ca3af; }
+
+  .typing::after {
+    content: '|';
+    animation: blink 1s step-end infinite;
+    color: var(--accent1);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* HOW IT WORKS */
+  .how { background: var(--surface); }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 60px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .step {
+    background: var(--card);
+    padding: 48px 36px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .step:hover { background: #18182a; }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--border);
+    position: absolute;
+    top: 24px; right: 24px;
+    transition: color 0.3s;
+  }
+  .step:hover .step-num { color: rgba(127,255,178,0.1); }
+  .step-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+  }
+  .icon-1 { background: rgba(127,255,178,0.1); }
+  .icon-2 { background: rgba(255,107,255,0.1); }
+  .icon-3 { background: rgba(91,224,255,0.1); }
+  .step h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+  .step p { color: var(--muted); font-size: 0.88rem; line-height: 1.8; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover { border-color: rgba(127,255,178,0.25); transform: translateY(-4px); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-card.wide { grid-column: span 2; }
+  .feature-emoji { font-size: 2rem; margin-bottom: 20px; display: block; }
+  .feature-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .feature-card p { color: var(--muted); font-size: 0.88rem; line-height: 1.8; }
+
+  /* COMPARE */
+  .compare { background: var(--surface); }
+  .compare-table {
+    margin-top: 60px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .compare-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-cell {
+    padding: 20px 28px;
+    font-size: 0.88rem;
+    display: flex; align-items: center;
+    border-right: 1px solid var(--border);
+  }
+  .compare-cell:last-child { border-right: none; }
+  .compare-header .compare-cell {
+    background: var(--card);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 16px 28px;
+  }
+  .compare-header .compare-cell.highlight-col {
+    background: rgba(127,255,178,0.05);
+    color: var(--accent1);
+  }
+  .compare-row .compare-cell.highlight-col {
+    background: rgba(127,255,178,0.03);
+    font-weight: 500;
+  }
+  .check { color: var(--accent1); font-size: 1.1rem; }
+  .cross { color: var(--muted); font-size: 1.1rem; }
+
+  /* CTA */
+  .cta-section {
+    text-align: center;
+    padding: 120px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(127,255,178,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .cta-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    line-height: 1;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--text) 40%, var(--accent1));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+  }
+  footer .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent1);
+    letter-spacing: 0.1em;
+  }
+  footer p { color: var(--muted); font-size: 0.78rem; font-family: 'Space Mono', monospace; }
+
+  /* SCROLL ANIMATION */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .what-grid { grid-template-columns: 1fr; gap: 40px; }
+    .steps { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .feature-card.wide { grid-column: span 1; }
+    .compare-cell { padding: 14px 16px; font-size: 0.8rem; }
+    footer { flex-direction: column; text-align: center; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  /* Marquee */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    background: var(--surface);
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-item {
+    padding: 0 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .marquee-item span { color: var(--accent1); margin-right: 40px; }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">VIBE//CODING</div>
+  <ul class="nav-links">
+    <li><a href="#what">개념</a></li>
+    <li><a href="#how">방법</a></li>
+    <li><a href="#features">특징</a></li>
+    <li><a href="#compare">비교</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <span class="hero-tag">✦ AI-NATIVE DEVELOPMENT</span>
+  <h1 class="hero-title">
+    <span class="line1">코드보다</span>
+    <span class="line2">VIBE</span>
+  </h1>
+  <p class="hero-sub">
+    문법을 외우지 않아도 됩니다. 규칙을 몰라도 됩니다.<br>
+    당신의 아이디어와 감각만으로 소프트웨어를 만드는<br>
+    새로운 개발 패러다임, 바이브 코딩.
+  </p>
+  <div class="hero-cta">
+    <a href="#what" class="btn-primary">지금 시작하기</a>
+    <a href="#how" class="btn-ghost">작동 방식 보기</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    SCROLL
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item">VIBE CODING <span>✦</span></span>
+    <span class="marquee-item">AI NATIVE <span>✦</span></span>
+    <span class="marquee-item">NO SYNTAX <span>✦</span></span>
+    <span class="marquee-item">JUST VIBE <span>✦</span></span>
+    <span class="marquee-item">SHIP FASTER <span>✦</span></span>
+    <span class="marquee-item">FEEL IT <span>✦</span></span>
+    <span class="marquee-item">BUILD IT <span>✦</span></span>
+    <span class="marquee-item">VIBE CODING <span>✦</span></span>
+    <span class="marquee-item">AI NATIVE <span>✦</span></span>
+    <span class="marquee-item">NO SYNTAX <span>✦</span></span>
+    <span class="marquee-item">JUST VIBE <span>✦</span></span>
+    <span class="marquee-item">SHIP FASTER <span>✦</span></span>
+    <span class="marquee-item">FEEL IT <span>✦</span></span>
+    <span class="marquee-item">BUILD IT <span>✦</span></span>
+  </div>
+</div>
+
+<!-- WHAT IS -->
+<section id="what">
+  <div class="container">
+    <div class="what-grid">
+      <div>
+        <span class="section-label reveal">// 바이브 코딩이란</span>
+        <h2 class="section-title reveal reveal-delay-1">AI에게 의도를,<br>코드는 AI가</h2>
+        <p class="section-sub reveal reveal-delay-2">
+          2025년 안드레이 카파시가 제시한 개념. 개발자는 세세한 구현보다
+          <strong style="color:var(--text)">무엇을 만들고 싶은지</strong>에 집중하고,
+          AI가 실제 코드를 생성·수정합니다. 실수가 나면? 그냥 AI에게 고쳐달라고 하면 됩니다.
+        </p>
+        <br><br>
+        <p class="section-sub reveal reveal-delay-3" style="font-family:'Space Mono',monospace; font-size:0.78rem; color: var(--accent1); line-height:1.9;">
+          "완전히 진심으로 코드를 잊어버려라.<br>
+          존재하는 것은 당신이 원하는 것뿐이다."<br>
+          <span style="color:var(--muted)">— Andrej Karpathy</span>
+        </p>
+      </div>
+      <div class="code-block reveal reveal-delay-2">
+        <div class="code-bar">
+          <div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div>
+          <span class="code-filename">vibe.js</span>
+        </div>
+        <div class="code-content">
+          <div><span class="c-comment">// 전통적인 코딩 😓</span></div>
+          <div><span class="c-keyword">const</span> <span class="c-fn">fetchUser</span> = <span class="c-keyword">async</span> (id) => {</div>
+          <div>&nbsp;&nbsp;<span class="c-keyword">try</span> {</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">const</span> res = <span class="c-keyword">await</span> fetch(</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-string">`/api/users/${id}`</span>)</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">if</span> (!res.ok) <span class="c-keyword">throw</span> ...</div>
+          <div>&nbsp;&nbsp;} <span class="c-keyword">catch</span>(e) { ... }</div>
+          <div>}</div>
+          <br>
+          <div><span class="c-comment">// 바이브 코딩 ✨</span></div>
+          <div><span class="c-string">"유저 정보 불러와서</span></div>
+          <div><span class="c-string">&nbsp;에러 처리도 해줘"</span></div>
+          <div><span class="c-fn typing">&nbsp;→ AI가 생성</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how">
+  <div class="container">
+    <span class="section-label reveal">// 작동 방식</span>
+    <h2 class="section-title reveal reveal-delay-1">세 단계로 완성</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">01</span>
+        <div class="step-icon icon-1">💭</div>
+        <h3>아이디어 표현</h3>
+        <p>코드 문법 없이 자연어로 원하는 것을 설명합니다. "로그인 폼 만들어줘", "버튼 클릭하면 애니메이션 넣어줘" 처럼요.</p>
+      </div>
+      <div class="step reveal reveal-delay-1">
+        <span class="step-num">02</span>
+        <div class="step-icon icon-2">⚡</div>
+        <h3>AI가 구현</h3>
+        <p>Claude, Cursor, Copilot 같은 AI가 즉시 코드를 생성합니다. 실행하고 결과를 확인하세요. 틀려도 괜찮습니다.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <span class="step-num">03</span>
+        <div class="step-icon icon-3">🔄</div>
+        <h3>반복과 개선</h3>
+        <p>마음에 안 들면 다시 말하면 됩니다. "색상 바꿔줘", "더 빠르게 만들어줘". 당신의 감각이 기준입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <span class="section-label reveal">// 왜 바이브 코딩인가</span>
+    <h2 class="section-title reveal reveal-delay-1">개발의 재정의</h2>
+    <div class="features-grid" style="margin-top:60px">
+      <div class="feature-card reveal">
+        <span class="feature-emoji">🚀</span>
+        <h3>극단적 속도</h3>
+        <p>아이디어에서 프로토타입까지 몇 시간이 아닌 몇 분. 반복 속도가 빨라지면 더 많이 시도하고 더 빠르게 배웁니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="feature-emoji">🧠</span>
+        <h3>창의성 최우선</h3>
+        <p>문법과 보일러플레이트에 쏟던 인지 자원을 문제 해결과 UX 설계에 집중할 수 있습니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <span class="feature-emoji">🌍</span>
+        <h3>접근성 혁명</h3>
+        <p>개발 경험이 없어도 됩니다. 디자이너, 기획자, 도메인 전문가 누구나 자신의 아이디어를 직접 구현할 수 있습니다.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <span class="feature-emoji">🎯</span>
+        <h3>VIBE = 의도 + 맥락 + 감각</h3>
+        <p>단순히 "AI한테 코드 시키기"가 아닙니다. 분위기(vibe)를 전달하고 AI와 협업하며 다듬어가는 새로운 창작 과정. 당신은 디렉터, AI는 개발팀입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare" class="compare">
+  <div class="container">
+    <span class="section-label reveal">// 비교</span>
+    <h2 class="section-title reveal reveal-delay-1">전통 코딩 vs 바이브 코딩</h2>
+    <div class="compare-table reveal reveal-delay-2">
+      <div class="compare-row compare-header">
+        <div class="compare-cell">항목</div>
+        <div class="compare-cell">전통 코딩</div>
+        <div class="compare-cell highlight-col">⚡ 바이브 코딩</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">진입 장벽</div>
+        <div class="compare-cell">수년간의 학습 필요</div>
+        <div class="compare-cell highlight-col" style="color:var(--accent1)">아이디어만 있으면 OK</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">프로토타입 속도</div>
+        <div class="compare-cell">일~주 단위</div>
+        <div class="compare-cell highlight-col" style="color:var(--accent1)">분~시간 단위</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">에러 대응</div>
+        <div class="compare-cell">직접 디버깅</div>
+        <div class="compare-cell highlight-col" style="color:var(--accent1)">AI에게 고쳐달라고</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">초점</div>
+        <div class="compare-cell">구현 방법 (How)</div>
+        <div class="compare-cell highlight-col" style="color:var(--accent1)">무엇을 만들까 (What)</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">코드 이해 필요 여부</div>
+        <div class="compare-cell"><span class="check">✓</span> 필수</div>
+        <div class="compare-cell highlight-col"><span class="check">△</span> 선택사항</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <p class="section-label reveal" style="justify-content:center;display:flex">// 시작할 준비가 됐나요</p>
+    <h2 class="cta-big reveal reveal-delay-1">JUST<br>VIBE IT</h2>
+    <p class="section-sub reveal reveal-delay-2" style="margin: 0 auto 48px; text-align:center; max-width:440px">
+      코드를 배우는 데 몇 달을 쓰지 마세요.<br>지금 당장 만들고 싶은 것을 만드세요.
+    </p>
+    <div class="reveal reveal-delay-3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="#" class="btn-primary">Claude로 시작하기</a>
+      <a href="#what" class="btn-ghost">더 알아보기</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">VIBE//CODING</div>
+  <p>© 2025 — 코드보다 느낌이 먼저다</p>
+  <p style="font-size:0.7rem">Built with <span style="color:var(--accent1)">vibe</span></p>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  let mx = 0, my = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth scroll for nav
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Parallax orbs
+  document.addEventListener('mousemove', e => {
+    const cx = (e.clientX / window.innerWidth - 0.5) * 30;
+    const cy = (e.clientY / window.innerHeight - 0.5) * 30;
+    document.querySelectorAll('.orb').forEach((orb, i) => {
+      const factor = (i + 1) * 0.4;
+      orb.style.transform = `translate(${cx * factor}px, ${cy * factor}px)`;
+    });
+  });
+</script>
+</body>
+</html>
